@@ -26,7 +26,7 @@ services:
     image: myapp
     command: dockerize
       -wait tcp://db:5432 -wait tcp://myapp:8000 -timeout 10s
-      bash -c "node db/init.js && yarn test"
+      bash -c "node db/db.js && yarn test"
     environment:
       APP_URL: http://myapp:8000
       APP_HOST_DB: db
