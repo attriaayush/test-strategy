@@ -10,7 +10,7 @@ RUN mkdir -p /app
 WORKDIR /app
 
 COPY package.json .
-COPY yarn.lock .
+# COPY yarn.lock .
 
 FROM base AS dependencies
 
