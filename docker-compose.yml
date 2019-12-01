@@ -9,29 +9,43 @@ services:
     expose:
       - 5432
 
+  redis:
+    image: "redis:alpine"
+    expose:
+      - 6379
+
   myapp:
     build: .
     image: myapp
     command: yarn start
     environment:
+      APP_REDIS_HOST: redis
+      APP_REDIS_PORT: 6379
       APP_DB_HOST: db
       APP_DB_USER: johndoe
       APP_DB_PASSWORD: passwordpickedbyjohndoe
+      APP_EXTERNAL_URL: http://myapp-tests:8002/api
     expose:
       - 8000
     depends_on:
       - db
+      - redis
 
   myapp-tests:
     image: myapp
-    command: dockerize
-      -wait tcp://db:5432 -wait tcp://myapp:8000 -timeout 10s
+    command: dockerize -wait tcp://db:5432 -wait tcp://redis:6379 -wait tcp://myapp:8000 -timeout 10s
       bash -c "node db/db.js && yarn test"
     environment:
+      APP_REDIS_HOST: redis
       APP_URL: http://myapp:8000
       APP_DB_HOST: db
       APP_DB_USER: johndoe
       APP_DB_PASSWORD: passwordpickedbyjohndoe
+      APP_REDIS_PORT: 6379
+      MOCK_SERVER_PORT: 8002
+    expose: 
+      - 8002
     depends_on:
       - db
+      - redis
       - myapp

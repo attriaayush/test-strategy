@@ -4,6 +4,8 @@ const cors = require('cors');
 
 const config = require('./config');
 
+const fetch = require("node-fetch")
+
 const db = require('knex')({
   client: 'pg',
   connection: {
@@ -13,19 +15,41 @@ const db = require('knex')({
   }
 });
 
+const redis = require("redis").createClient({
+  host: config.redis.host,
+  port: config.redis.port
+})
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
+const validateUserEmail = async (email) => {
+  const res = await fetch(`${config.app.externalUrl}/validate?email=${email}`);
+  if (res.status !== 200) {
+    return false;
+  }
+
+  const json = await res.json();
+  return json.result === 'valid';
+}
+
 app.route('/api/users').post(async (req, res, next) => {
   try {
     const { email, firstname } = req.body;
     const userData = { email, firstname };
 
+    const isValidUser = await validateUserEmail(email);
+    if(!isValidUser) {
+      return res.sendStatus(403);
+    }
+
     const result = await db('users').returning('id').insert(userData);
     const id = result[0];
+
+    redis.set(id, JSON.stringify(userData));
 
     res.status(201).send({ id, ...userData })
   } catch (err) {
