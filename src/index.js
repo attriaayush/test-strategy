@@ -34,14 +34,18 @@ app.route('/api/users').post(async (req, res, next) => {
   }
 });
 
-app.route('api/users').get((req, res, next) => {
-  db(users)
+app.route('/api/users').get((req, res, next) => {
+  db('users')
     .select('id', 'email', 'firstname')
     .then(users => res.status(200).send(users))
     .catch(err => {
-      console.log(`Error: Unable to create user: ${err.message}. ${err.stack}`)
+      console.log(`Unable to fetch users: ${err.message}. ${err.stack}`);
       return next(err);
     });
+});
+
+process.on('uncaughtException', function (err) {
+  console.log(err.stack);
 });
 
 try {

@@ -14,7 +14,7 @@ services:
     image: myapp
     command: yarn start
     environment:
-      APP_HOST_DB: db
+      APP_DB_HOST: db
       APP_DB_USER: johndoe
       APP_DB_PASSWORD: passwordpickedbyjohndoe
     expose:
@@ -29,7 +29,7 @@ services:
       bash -c "node db/db.js && yarn test"
     environment:
       APP_URL: http://myapp:8000
-      APP_HOST_DB: db
+      APP_DB_HOST: db
       APP_DB_USER: johndoe
       APP_DB_PASSWORD: passwordpickedbyjohndoe
     depends_on:
